@@ -1,0 +1,42 @@
+# Android fstab for Realme C15 (RMX2180) - MT6765
+# Generated from stock recovery analysis + known RMX2185 layout
+
+#<src>                                          <mnt_point>     <type>  <mnt_flags and options>                                                              <fs_mgr_flags>
+
+# Preferred A/B style + dynamic partitions
+system                                          /system         ext4    ro                                                                                    wait,logical,first_stage_mount
+system_ext                                      /system_ext     ext4    ro                                                                                    wait,logical,first_stage_mount
+vendor                                          /vendor         ext4    ro                                                                                    wait,logical,first_stage_mount
+product                                         /product        ext4    ro                                                                                    wait,logical,first_stage_mount
+odm                                             /odm            ext4    ro                                                                                    wait,logical,first_stage_mount
+
+# Metadata & userdata (FBE)
+/dev/block/by-name/metadata                     /metadata       ext4    noatime,nosuid,nodev,discard                                                         wait,formattable,first_stage_mount,check
+/dev/block/by-name/userdata                     /data           f2fs    noatime,nosuid,nodev,discard,reserve_root=32768,resgid=1065,fsync_mode=nobarrier     latemount,wait,check,formattable,fileencryption=aes-256-xts:aes-256-cts:v2,keydirectory=/metadata/vold/metadata_encryption,quota,reservedsize=128M
+
+# Boot / recovery related
+/dev/block/by-name/boot                         /boot           emmc    defaults                                                                              defaults
+/dev/block/by-name/recovery                     /recovery       emmc    defaults                                                                              defaults
+/dev/block/by-name/dtbo                         /dtbo           emmc    defaults                                                                              defaults
+/dev/block/by-name/vbmeta                       /vbmeta         emmc    defaults                                                                              defaults
+/dev/block/by-name/vbmeta_system                /vbmeta_system  emmc    defaults                                                                              defaults
+/dev/block/by-name/vbmeta_vendor                /vbmeta_vendor  emmc    defaults                                                                              defaults
+
+# Misc
+/dev/block/by-name/misc                         /misc           emmc    defaults                                                                              defaults
+/dev/block/by-name/para                         /para           emmc    defaults                                                                              defaults
+/dev/block/by-name/expdb                        /expdb          emmc    defaults                                                                              defaults
+/dev/block/by-name/frp                          /frp            emmc    defaults                                                                              defaults
+/dev/block/by-name/nvram                        /nvram          emmc    defaults                                                                              defaults
+/dev/block/by-name/proinfo                      /proinfo        emmc    defaults                                                                              defaults
+/dev/block/by-name/protect1                     /protect1       ext4    defaults                                                                              defaults
+/dev/block/by-name/protect2                     /protect2       ext4    defaults                                                                              defaults
+/dev/block/by-name/seccfg                       /seccfg         emmc    defaults                                                                              defaults
+/dev/block/by-name/lk                           /lk             emmc    defaults                                                                              defaults
+/dev/block/by-name/lk2                          /lk2            emmc    defaults                                                                              defaults
+/dev/block/by-name/boot_para                    /boot_para      emmc    defaults                                                                              defaults
+
+# External storage
+/dev/block/mmcblk1p1                            /sdcard         vfat    defaults                                                                              defaults
+/devices/platform/mt_sdhci.0/mmc_host*          auto            auto    defaults                                                                              voldmanaged=sdcard1:auto
+/devices/*/xhci-hcd.0.auto/usb*                 auto            auto    defaults                                                                              voldmanaged=usb:auto

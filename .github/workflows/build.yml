@@ -1,4 +1,3 @@
-
 name: Build TWRP RMX2180
 
 on:
@@ -6,6 +5,12 @@ on:
 
 permissions:
   contents: read
+
+env:
+  MANIFEST_URL: https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp.git
+  MANIFEST_BRANCH: twrp-11
+  DEVICE_PATH: device/realme/RMX2180
+  DEVICE_NAME: RMX2180
 
 jobs:
   build:
@@ -29,59 +34,42 @@ jobs:
 
       - name: Install repo
         run: |
-          curl -fsSL \
-            https://storage.googleapis.com/git-repo-downloads/repo \
+          curl -fsSL https://storage.googleapis.com/git-repo-downloads/repo \
             -o /tmp/repo
           chmod +x /tmp/repo
           sudo install /tmp/repo /usr/local/bin/repo
           repo --version
 
-      - name: Inspect device tree
-        id: tree
-        shell: bash
+      - name: Validate device tree
         run: |
-          TREE_FILE="$(find device -name AndroidProducts.mk \
-            -type f -print -quit)"
-
-          if [ -z "$TREE_FILE" ]; then
-            echo "::error::No AndroidProducts.mk found under device/"
-            find device -maxdepth 5 -type f | head -200
-            exit 1
-          fi
-
-          TREE_DIR="$(dirname "$TREE_FILE")"
-          echo "tree_dir=$TREE_DIR" >> "$GITHUB_OUTPUT"
-          echo "Found product configuration: $TREE_FILE"
+          test -f "$DEVICE_PATH/AndroidProducts.mk"
+          test -f "$DEVICE_PATH/BoardConfig.mk"
+          test -f "$DEVICE_PATH/device.mk"
+          echo "Device tree: $DEVICE_PATH"
+          ls -la "$DEVICE_PATH"
 
       - name: Initialize TWRP source
         run: |
           mkdir -p twrp
           cd twrp
-
           repo init \
-            -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp.git \
-            -b twrp-11 --depth=1
-
+            -u "$MANIFEST_URL" \
+            -b "$MANIFEST_BRANCH" \
+            --depth=1
           repo sync -c -j2 \
             --force-sync \
             --no-clone-bundle \
             --no-tags
 
       - name: Install device tree
-        env:
-          TREE_DIR: ${{ steps.tree.outputs.tree_dir }}
         run: |
-          mkdir -p twrp/device/realme/RMX2180
-          cp -a "$TREE_DIR/." twrp/device/realme/RMX2180/
-
-          echo "Device tree files:"
-          ls -la twrp/device/realme/RMX2180
+          mkdir -p "twrp/$DEVICE_PATH"
+          cp -a "$DEVICE_PATH/." "twrp/$DEVICE_PATH/"
 
       - name: Build recovery
         run: |
           cd twrp
           export ALLOW_MISSING_DEPENDENCIES=true
-
           source build/envsetup.sh
           lunch twrp_RMX2180-eng
           mka recoveryimage -j2
@@ -90,11 +78,11 @@ jobs:
         id: image
         run: |
           IMAGE="$(find twrp/out/target/product \
-            -type f -name recovery.img -print -quit 2>/dev/null || true)"
+            -type f -name recovery.img -print -quit)"
 
           if [ -z "$IMAGE" ]; then
-            echo "::error::Build finished without a recovery.img"
-            find twrp/out/target/product -maxdepth 4 -type f \
+            echo "::error::Build finished without recovery.img"
+            find twrp/out/target/product -type f \
               \( -name '*recovery*' -o -name 'boot.img' \) \
               2>/dev/null | head -100
             exit 1

@@ -1,0 +1,23 @@
+#
+# system.prop for realme C15 (RMX2180) — TWRP
+#
+
+# SoC / board identification
+ro.product.device=RMX2180
+ro.product.system.device=RMX2180
+ro.product.vendor.device=oppo6765
+ro.board.platform=mt6765
+ro.boot.hardware=mt6765
+
+# Treble
+ro.treble.enabled=true
+
+# Crypto / FBE (stock policy: fscrypt v1)
+ro.crypto.type=file
+ro.crypto.allow_encrypt_override=true
+ro.crypto.volume.levels=1
+ro.crypto.volume.contents_mode=aes-256-xts
+ro.crypto.volume.filenames_mode=aes-256-cts
+
+# Storage
+ro.vendor.mtk_emmc_support=1
